@@ -1,0 +1,53 @@
+/*
+ * 【手動修改區】設計變數（design token）——全站的顏色、字型、間距、圓角都從這裡來。
+ * 改這裡的值，整個網站會一起變。例如把 --color-ink 改成 #14532d，頁首與按鈕就會變成深綠色。
+ * 【重要】文字色與背景色的對比要夠（至少 4.5:1），否則視力較弱的人會看不清楚。
+ */
+:root {
+  /* 【可修改】主色：藍染靛色，用在頁首、按鈕、標題 */
+  --color-ink: #1b3350;
+  /* 【可修改】主色的淺色版：滑鼠移上去、選取時的底色 */
+  --color-ink-soft: #e3e9f1;
+  /* 【可修改】印章紅：只用在價格與「僅剩 N 件」，不要到處用，才會顯眼 */
+  --color-seal: #b8202f;
+  /* 【可修改】頁面底色（帶一點青瓷灰的紙色） */
+  --color-paper: #eef2f0;
+  /* 卡片、表單的底色 */
+  --color-surface: #ffffff;
+  /* 一般文字、次要文字、分隔線 */
+  --color-text: #1d2328;
+  --color-muted: #55636b;
+  --color-line: #cfd8d6;
+  /* 成功、錯誤提示 */
+  --color-ok: #1f6b45;
+  --color-error: #a61b29;
+
+  /* 【可修改】字型：只用電腦內建字型（規範禁止外部字型）。
+     標題用明體（像招牌），內文用黑體（好讀）。 */
+  --font-display: 'Songti TC', 'Noto Serif TC', 'Noto Serif CJK TC', 'PMingLiU', 'MingLiU', serif;
+  --font-body: 'PingFang TC', 'Noto Sans TC', 'Noto Sans CJK TC', 'Microsoft JhengHei', system-ui, sans-serif;
+
+  /* 【可修改】字級（以 16px 為基準，依比例放大） */
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.6rem;
+  --text-2xl: 2.4rem;
+  --text-hero: clamp(2.6rem, 7vw, 4.8rem);
+
+  /* 【可修改】間距（4px 的倍數） */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 40px;
+  --space-7: 64px;
+
+  /* 【可修改】圓角：數字越大越圓 */
+  --radius: 6px;
+  --radius-lg: 10px;
+
+  /* 頁面最大寬度 */
+  --page-width: 1120px;
+}

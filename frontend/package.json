@@ -1,0 +1,54 @@
+{
+  "name": "shop-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:mock": "vite --mode mock",
+    "build": "vue-tsc --noEmit && vite build",
+    "build:mock": "vite build --mode mock",
+    "preview": "vite preview",
+    "typecheck": "vue-tsc --noEmit",
+    "lint": "eslint . && prettier --check \"src/**/*.{ts,vue,css,json}\" \"tests/**/*.ts\" \"e2e/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.{ts,vue,css,json}\" \"tests/**/*.ts\" \"e2e/**/*.ts\"",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest",
+    "gen:api": "openapi-typescript ../docs/api/openapi.yaml -o src/types/api.d.ts",
+    "e2e": "playwright test"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  },
+  "dependencies": {
+    "pinia": "^4.1.0",
+    "vue": "^3.5.46",
+    "vue-router": "^5.5.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.10",
+    "@vitejs/plugin-vue": "^6.0.11",
+    "@vitest/coverage-v8": "^5.1.2",
+    "@vue/eslint-config-typescript": "^14.9.0",
+    "@vue/test-utils": "^2.6.0",
+    "@vue/tsconfig": "^0.9.1",
+    "eslint": "^10.15.0",
+    "eslint-plugin-vue": "^10.12.1",
+    "jsdom": "^31.0.1",
+    "msw": "^3.0.7",
+    "openapi-typescript": "^7.13.0",
+    "prettier": "^3.10.1",
+    "typescript": "~5.9",
+    "typescript-eslint": "^8.74.0",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.2",
+    "vue-tsc": "^3.3.14"
+  },
+  "overrides": {
+    "glob": "^14.0.6",
+    "minimatch": "^11.0.9"
+  }
+}

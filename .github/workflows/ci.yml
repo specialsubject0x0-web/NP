@@ -1,0 +1,53 @@
+# CI（持續整合）：每次 push 或開 Pull Request 時自動檢查。全部通過才可以合併（合併仍由人決定）。
+# 對應 AGENTS.md 3.4 DoD 與 5.3「相依：有已知漏洞不得合併」。
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: 後端（ruff / mypy / pytest / pip-audit）
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv python install 3.14
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy app
+      - run: uv run pytest --cov=app --cov-branch --cov-fail-under=80
+      - run: uv run pip-audit
+
+  frontend:
+    name: 前端（lint / typecheck / test / build / audit / e2e）
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      # 契約檢查：用 openapi.yaml 重新產生型別，如果和 commit 的不同就失敗（代表有人改了契約卻沒更新前端）
+      - run: npm run gen:api && git diff --exit-code src/types/api.d.ts
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+      - run: npm audit --audit-level=low
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
