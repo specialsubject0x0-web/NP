@@ -23,4 +23,5 @@
 | T-016 | US-006, US-007 | frontend-developer | frontend | 訂單列表／詳情、付款、取消 | → T-015 | done |
 | T-017 | US-009, US-010 | frontend-developer | frontend | 後台商品與訂單頁 | → T-011 | done |
 | T-018 | 全部 | tester | both | 後端負面測試、前端元件測試、Playwright E2E | ‖ 各 Task | done |
+| T-020 | US-006, US-008 | backend-developer | backend | 修正審查發現：付款並發重複扣款、登入限速並發繞過（先寫重現測試） | → 審查 | done |
 | T-019 | — | scrum-master | docs | CI 設定、code-guide、results-log | 最後 | done |

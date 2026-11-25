@@ -81,20 +81,17 @@ def handle_callback(db: Session, data: PaymentCallbackIn, signature: str | None)
     if payment.status != 'pending':
         return payment  # 重複回呼：已經處理過，什麼都不做
 
-    order = order_repo.get(db, payment.order_id)
-    if order is None:  # pragma: no cover - 外鍵保證存在
-        raise AppError(404, 'ORDER_NOT_FOUND', '找不到這筆訂單')
-
     final_status = data.status
-    if final_status == 'succeeded' and not order_state.can_transition(order.status, 'paid'):
-        # 例如：付款途中訂單被取消。付款標記失敗，訂單狀態不變（實務上需人工退款，見假設 A-05）
+    # 【重要】【為什麼】直接用條件式 UPDATE 把訂單從「待付款」改成「已付款」，看資料庫實際有沒有改到，
+    # 而不是看 Python 物件裡的狀態（那可能是這個 Session 快取的舊資料）。
+    # 改不到 = 訂單已被取消，或已被另一筆付款付掉 → 這筆付款標成失敗，避免重複扣款或對已取消訂單收款。
+    # （例如付款途中訂單被取消；實務上需人工退款，見假設 A-05）
+    if final_status == 'succeeded' and not order_repo.update_status(db, payment.order_id, 'pending_payment', 'paid'):
         final_status = 'failed'
     if not order_repo.finish_payment(db, payment.id, final_status):
-        db.rollback()
+        db.rollback()  # 同時有另一個回呼先處理完這筆付款：連同上面的訂單更新一起還原
         db.refresh(payment)
-        return payment  # 同時有另一個回呼先處理完了
-    if final_status == 'succeeded':
-        order_repo.update_status(db, order.id, 'pending_payment', 'paid')
+        return payment
     db.commit()
     db.refresh(payment)
     return payment

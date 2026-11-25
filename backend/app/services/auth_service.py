@@ -59,11 +59,12 @@ def login(db: Session, data: LoginIn, client_ip: str) -> LoginResult:
     """
     email = data.email.lower()
     key = f'{client_ip}:{email}'
-    if rate_limit.login_failures.is_blocked(key):
+    # 【為什麼】先「記一次」再驗證密碼（hit 是原子操作）。如果先檢查、驗證完才記錄，
+    # 同時送出的大量請求都會在記錄前通過檢查，限速就失效了。登入成功時再把次數清掉。
+    if not rate_limit.login_failures.hit(key):
         raise AppError(429, 'TOO_MANY_ATTEMPTS', '登入失敗次數過多，請 5 分鐘後再試')
     user = user_repo.get_by_email(db, email)
     if not verify_password(data.password, user.password_hash if user else None) or user is None:
-        rate_limit.login_failures.hit(key)
         raise AppError(401, 'INVALID_CREDENTIALS', 'Email 或密碼錯誤')
     rate_limit.login_failures.reset(key)
     return _start_session(db, user)
