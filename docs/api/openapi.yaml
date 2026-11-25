@@ -1,0 +1,2296 @@
+# 本檔由 backend/scripts/export_openapi.py 產生，是前後端唯一的 API 契約。請勿手改；變更須經人核可。
+openapi: 3.1.0
+info:
+  title: Shop API
+  description: 購物網站 API 契約（前後端唯一介面）。金額單位：新台幣元（整數）。
+  version: 1.0.0
+paths:
+  /api/v1/auth/csrf:
+    get:
+      tags:
+      - auth
+      summary: 取得 CSRF token（網站開啟時先呼叫一次）
+      operationId: get_csrf_api_v1_auth_csrf_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsrfOut'
+  /api/v1/auth/register:
+    post:
+      tags:
+      - auth
+      summary: 註冊並登入
+      operationId: register_api_v1_auth_register_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterIn'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserOut'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/auth/login:
+    post:
+      tags:
+      - auth
+      summary: 登入
+      operationId: login_api_v1_auth_login_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserOut'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/auth/logout:
+    post:
+      tags:
+      - auth
+      summary: 登出
+      operationId: logout_api_v1_auth_logout_post
+      responses:
+        '204':
+          description: Successful Response
+  /api/v1/auth/me:
+    get:
+      tags:
+      - auth
+      summary: 目前登入者
+      operationId: me_api_v1_auth_me_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserOut'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/categories:
+    get:
+      tags:
+      - products
+      summary: 分類列表
+      operationId: list_categories_api_v1_categories_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/CategoryOut'
+                type: array
+                title: Response List Categories Api V1 Categories Get
+  /api/v1/products:
+    get:
+      tags:
+      - products
+      summary: 搜尋商品
+      operationId: list_products_api_v1_products_get
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Q
+      - name: category_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 2147483647
+            exclusiveMinimum: 0
+          - type: 'null'
+          title: Category Id
+      - name: min_price
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            minimum: 0
+          - type: 'null'
+          title: Min Price
+      - name: max_price
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            minimum: 0
+          - type: 'null'
+          title: Max Price
+      - name: sort
+        in: query
+        required: false
+        schema:
+          enum:
+          - newest
+          - price_asc
+          - price_desc
+          - name
+          type: string
+          default: newest
+          title: Sort
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 10000
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 50
+          minimum: 1
+          default: 12
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_ProductOut_'
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+  /api/v1/products/{product_id}:
+    get:
+      tags:
+      - products
+      summary: 商品詳情
+      operationId: get_product_api_v1_products__product_id__get
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          maximum: 2147483647
+          exclusiveMinimum: 0
+          title: Product Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductOut'
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/cart:
+    get:
+      tags:
+      - cart
+      summary: 我的購物車
+      operationId: get_cart_api_v1_cart_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartOut'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/cart/items/{product_id}:
+    put:
+      tags:
+      - cart
+      summary: 設定購物車中某商品的數量
+      operationId: set_item_api_v1_cart_items__product_id__put
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          maximum: 2147483647
+          exclusiveMinimum: 0
+          title: Product Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartItemIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartOut'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - cart
+      summary: 從購物車移除商品
+      operationId: remove_item_api_v1_cart_items__product_id__delete
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          maximum: 2147483647
+          exclusiveMinimum: 0
+          title: Product Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartOut'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/addresses:
+    get:
+      tags:
+      - cart
+      summary: 我的收件地址
+      operationId: list_addresses_api_v1_addresses_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/AddressOut'
+                type: array
+                title: Response List Addresses Api V1 Addresses Get
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+      - cart
+      summary: 新增收件地址
+      operationId: add_address_api_v1_addresses_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddressIn'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddressOut'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/addresses/{address_id}:
+    delete:
+      tags:
+      - cart
+      summary: 刪除收件地址
+      operationId: delete_address_api_v1_addresses__address_id__delete
+      parameters:
+      - name: address_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          maximum: 2147483647
+          exclusiveMinimum: 0
+          title: Address Id
+      responses:
+        '204':
+          description: Successful Response
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/checkout/quote:
+    post:
+      tags:
+      - orders
+      summary: 結帳試算（後端計算金額）
+      operationId: quote_api_v1_checkout_quote_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuoteIn'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QuoteOut'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Unprocessable Content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too Many Requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/orders:
+    post:
+      tags:
+      - orders
+      summary: 建立訂單（需 Idempotency-Key）
+      operationId: create_order_api_v1_orders_post
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreateIn'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderOut'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Too Many Requests
+    get:
+      tags:
+      - orders
+      summary: 我的訂單
+      operationId: list_orders_api_v1_orders_get
+      parameters:
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 10000
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 50
+          minimum: 1
+          default: 10
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_OrderSummaryOut_'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Too Many Requests
+  /api/v1/orders/{order_id}:
+    get:
+      tags:
+      - orders
+      summary: 訂單詳情
+      operationId: get_order_api_v1_orders__order_id__get
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          maximum: 2147483647
+          exclusiveMinimum: 0
+          title: Order Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderOut'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Too Many Requests
+  /api/v1/orders/{order_id}/cancel:
+    post:
+      tags:
+      - orders
+      summary: 取消待付款訂單
+      operationId: cancel_order_api_v1_orders__order_id__cancel_post
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          maximum: 2147483647
+          exclusiveMinimum: 0
+          title: Order Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderOut'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Too Many Requests
+  /api/v1/orders/{order_id}/payments:
+    post:
+      tags:
+      - orders
+      summary: 付款（模擬金流，需 Idempotency-Key）
+      operationId: pay_order_api_v1_orders__order_id__payments_post
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          maximum: 2147483647
+          exclusiveMinimum: 0
+          title: Order Id
+      - name: Idempotency-Key
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Idempotency-Key
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentOut'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Too Many Requests
+  /api/v1/payments/callback:
+    post:
+      tags:
+      - orders
+      summary: 金流回呼（需 X-Signature 簽章）
+      operationId: payment_callback_api_v1_payments_callback_post
+      parameters:
+      - name: X-Signature
+        in: header
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: X-Signature
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentCallbackIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentCallbackOut'
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad Request
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+        '429':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Too Many Requests
+  /api/v1/admin/products:
+    get:
+      tags:
+      - admin
+      summary: 商品列表（含下架）
+      operationId: list_products_api_v1_admin_products_get
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            maxLength: 50
+          - type: 'null'
+          title: Q
+      - name: category_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            maximum: 2147483647
+            exclusiveMinimum: 0
+          - type: 'null'
+          title: Category Id
+      - name: min_price
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            minimum: 0
+          - type: 'null'
+          title: Min Price
+      - name: max_price
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+            minimum: 0
+          - type: 'null'
+          title: Max Price
+      - name: sort
+        in: query
+        required: false
+        schema:
+          enum:
+          - newest
+          - price_asc
+          - price_desc
+          - name
+          type: string
+          default: newest
+          title: Sort
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 10000
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 50
+          minimum: 1
+          default: 12
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_AdminProductOut_'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+    post:
+      tags:
+      - admin
+      summary: 新增商品
+      operationId: create_product_api_v1_admin_products_post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateIn'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProductOut'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+  /api/v1/admin/products/{product_id}:
+    patch:
+      tags:
+      - admin
+      summary: 修改商品（價格、庫存、上下架）
+      operationId: update_product_api_v1_admin_products__product_id__patch
+      parameters:
+      - name: product_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          maximum: 2147483647
+          exclusiveMinimum: 0
+          title: Product Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdateIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProductOut'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+  /api/v1/admin/orders:
+    get:
+      tags:
+      - admin
+      summary: 全部訂單
+      operationId: list_orders_api_v1_admin_orders_get
+      parameters:
+      - name: status
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - enum:
+            - pending_payment
+            - paid
+            - shipped
+            - completed
+            - cancelled
+            type: string
+          - type: 'null'
+          title: Status
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 10000
+          minimum: 1
+          default: 1
+          title: Page
+      - name: page_size
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 50
+          minimum: 1
+          default: 20
+          title: Page Size
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Page_AdminOrderOut_'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+  /api/v1/admin/orders/{order_id}:
+    get:
+      tags:
+      - admin
+      summary: 訂單詳情（後台）
+      operationId: get_order_api_v1_admin_orders__order_id__get
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          maximum: 2147483647
+          exclusiveMinimum: 0
+          title: Order Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderOut'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+  /api/v1/admin/orders/{order_id}/transition:
+    post:
+      tags:
+      - admin
+      summary: 改變訂單狀態（出貨、完成、取消）
+      operationId: transition_api_v1_admin_orders__order_id__transition_post
+      parameters:
+      - name: order_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          maximum: 2147483647
+          exclusiveMinimum: 0
+          title: Order Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransitionIn'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderOut'
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Not Found
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unprocessable Content
+  /api/v1/health:
+    get:
+      tags:
+      - system
+      summary: 健康檢查
+      operationId: health_api_v1_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+                title: Response Health Api V1 Health Get
+components:
+  schemas:
+    AddressIn:
+      properties:
+        recipient:
+          type: string
+          maxLength: 50
+          minLength: 1
+          title: Recipient
+        phone:
+          type: string
+          pattern: ^0\d{8,9}$
+          title: Phone
+        postal_code:
+          type: string
+          pattern: ^\d{3}(\d{2,3})?$
+          title: Postal Code
+        city:
+          type: string
+          maxLength: 20
+          minLength: 1
+          title: City
+        line:
+          type: string
+          maxLength: 200
+          minLength: 1
+          title: Line
+      additionalProperties: false
+      type: object
+      required:
+      - recipient
+      - phone
+      - postal_code
+      - city
+      - line
+      title: AddressIn
+      description: 新增收件地址。電話：台灣手機 09 開頭 10 碼，或市話（含區碼）9–10 碼。
+    AddressOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        recipient:
+          type: string
+          title: Recipient
+        phone:
+          type: string
+          title: Phone
+        postal_code:
+          type: string
+          title: Postal Code
+        city:
+          type: string
+          title: City
+        line:
+          type: string
+          title: Line
+      type: object
+      required:
+      - id
+      - recipient
+      - phone
+      - postal_code
+      - city
+      - line
+      title: AddressOut
+    AdminOrderOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        status:
+          type: string
+          enum:
+          - pending_payment
+          - paid
+          - shipped
+          - completed
+          - cancelled
+          title: Status
+        total:
+          type: integer
+          title: Total
+        currency:
+          type: string
+          title: Currency
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        item_count:
+          type: integer
+          title: Item Count
+        user_id:
+          type: integer
+          title: User Id
+        recipient_name:
+          type: string
+          title: Recipient Name
+      type: object
+      required:
+      - id
+      - status
+      - total
+      - currency
+      - created_at
+      - item_count
+      - user_id
+      - recipient_name
+      title: AdminOrderOut
+    AdminProductOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        name:
+          type: string
+          title: Name
+        description:
+          type: string
+          title: Description
+        price:
+          type: integer
+          title: Price
+        currency:
+          type: string
+          title: Currency
+        stock:
+          type: integer
+          title: Stock
+        image_color:
+          type: string
+          title: Image Color
+        category_id:
+          type: integer
+          title: Category Id
+        is_active:
+          type: boolean
+          title: Is Active
+      type: object
+      required:
+      - id
+      - name
+      - description
+      - price
+      - currency
+      - stock
+      - image_color
+      - category_id
+      - is_active
+      title: AdminProductOut
+      description: 後台看到的商品資料（多了是否上架）。
+    CartItemIn:
+      properties:
+        quantity:
+          type: integer
+          maximum: 99.0
+          minimum: 1.0
+          title: Quantity
+      additionalProperties: false
+      type: object
+      required:
+      - quantity
+      title: CartItemIn
+      description: 設定某商品在購物車的數量（1–99，R-05）。
+    CartItemOut:
+      properties:
+        product_id:
+          type: integer
+          title: Product Id
+        name:
+          type: string
+          title: Name
+        unit_price:
+          type: integer
+          title: Unit Price
+        quantity:
+          type: integer
+          title: Quantity
+        line_total:
+          type: integer
+          title: Line Total
+        stock:
+          type: integer
+          title: Stock
+        image_color:
+          type: string
+          title: Image Color
+        is_available:
+          type: boolean
+          title: Is Available
+      type: object
+      required:
+      - product_id
+      - name
+      - unit_price
+      - quantity
+      - line_total
+      - stock
+      - image_color
+      - is_available
+      title: CartItemOut
+    CartOut:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/CartItemOut'
+          type: array
+          title: Items
+        item_count:
+          type: integer
+          title: Item Count
+        subtotal:
+          type: integer
+          title: Subtotal
+        currency:
+          type: string
+          title: Currency
+      type: object
+      required:
+      - items
+      - item_count
+      - subtotal
+      - currency
+      title: CartOut
+      description: 購物車。subtotal 只供顯示；真正要付的金額以結帳試算為準（AGENTS.md 6.3）。
+    CategoryOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        name:
+          type: string
+          title: Name
+        slug:
+          type: string
+          title: Slug
+      type: object
+      required:
+      - id
+      - name
+      - slug
+      title: CategoryOut
+    CsrfOut:
+      properties:
+        csrf_token:
+          type: string
+          title: Csrf Token
+      type: object
+      required:
+      - csrf_token
+      title: CsrfOut
+      description: CSRF token（前端放在 X-CSRF-Token 標頭）。
+    ErrorResponse:
+      properties:
+        code:
+          type: string
+          title: Code
+          examples:
+          - ORDER_OUT_OF_STOCK
+        message:
+          type: string
+          title: Message
+          examples:
+          - 庫存不足
+        details:
+          additionalProperties: true
+          type: object
+          title: Details
+      type: object
+      required:
+      - code
+      - message
+      title: ErrorResponse
+      description: 統一錯誤格式。
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    LoginIn:
+      properties:
+        email:
+          type: string
+          maxLength: 254
+          title: Email
+        password:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Password
+      additionalProperties: false
+      type: object
+      required:
+      - email
+      - password
+      title: LoginIn
+      description: 登入：Email 與密碼。
+    OrderCreateIn:
+      properties:
+        address_id:
+          type: integer
+          maximum: 2147483647.0
+          exclusiveMinimum: 0.0
+          title: Address Id
+        coupon_code:
+          anyOf:
+          - type: string
+            maxLength: 32
+            minLength: 1
+            pattern: ^[A-Za-z0-9_-]+$
+          - type: 'null'
+          title: Coupon Code
+      additionalProperties: false
+      type: object
+      required:
+      - address_id
+      title: OrderCreateIn
+      description: 建立訂單：選地址、可帶優惠碼。注意：沒有價格欄位，金額一律由後端計算。
+    OrderItemOut:
+      properties:
+        product_id:
+          type: integer
+          title: Product Id
+        product_name:
+          type: string
+          title: Product Name
+        unit_price:
+          type: integer
+          title: Unit Price
+        quantity:
+          type: integer
+          title: Quantity
+        line_total:
+          type: integer
+          title: Line Total
+      type: object
+      required:
+      - product_id
+      - product_name
+      - unit_price
+      - quantity
+      - line_total
+      title: OrderItemOut
+    OrderOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        status:
+          type: string
+          enum:
+          - pending_payment
+          - paid
+          - shipped
+          - completed
+          - cancelled
+          title: Status
+        subtotal:
+          type: integer
+          title: Subtotal
+        discount:
+          type: integer
+          title: Discount
+        shipping_fee:
+          type: integer
+          title: Shipping Fee
+        total:
+          type: integer
+          title: Total
+        currency:
+          type: string
+          title: Currency
+        coupon_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Coupon Code
+        recipient_name:
+          type: string
+          title: Recipient Name
+        recipient_phone:
+          type: string
+          title: Recipient Phone
+        shipping_address:
+          type: string
+          title: Shipping Address
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        items:
+          items:
+            $ref: '#/components/schemas/OrderItemOut'
+          type: array
+          title: Items
+      type: object
+      required:
+      - id
+      - status
+      - subtotal
+      - discount
+      - shipping_fee
+      - total
+      - currency
+      - coupon_code
+      - recipient_name
+      - recipient_phone
+      - shipping_address
+      - created_at
+      - items
+      title: OrderOut
+    OrderSummaryOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        status:
+          type: string
+          enum:
+          - pending_payment
+          - paid
+          - shipped
+          - completed
+          - cancelled
+          title: Status
+        total:
+          type: integer
+          title: Total
+        currency:
+          type: string
+          title: Currency
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        item_count:
+          type: integer
+          title: Item Count
+      type: object
+      required:
+      - id
+      - status
+      - total
+      - currency
+      - created_at
+      - item_count
+      title: OrderSummaryOut
+      description: 訂單列表用的精簡資料。
+    Page_AdminOrderOut_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/AdminOrderOut'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+      type: object
+      required:
+      - items
+      - total
+      - page
+      - page_size
+      title: Page[AdminOrderOut]
+    Page_AdminProductOut_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/AdminProductOut'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+      type: object
+      required:
+      - items
+      - total
+      - page
+      - page_size
+      title: Page[AdminProductOut]
+    Page_OrderSummaryOut_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/OrderSummaryOut'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+      type: object
+      required:
+      - items
+      - total
+      - page
+      - page_size
+      title: Page[OrderSummaryOut]
+    Page_ProductOut_:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/ProductOut'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+        page:
+          type: integer
+          title: Page
+        page_size:
+          type: integer
+          title: Page Size
+      type: object
+      required:
+      - items
+      - total
+      - page
+      - page_size
+      title: Page[ProductOut]
+    PaymentCallbackIn:
+      properties:
+        transaction_id:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Transaction Id
+        order_id:
+          type: integer
+          maximum: 2147483647.0
+          exclusiveMinimum: 0.0
+          title: Order Id
+        amount:
+          type: integer
+          minimum: 0.0
+          title: Amount
+        status:
+          type: string
+          enum:
+          - succeeded
+          - failed
+          title: Status
+      additionalProperties: false
+      type: object
+      required:
+      - transaction_id
+      - order_id
+      - amount
+      - status
+      title: PaymentCallbackIn
+      description: 金流回呼內容。簽章放在 X-Signature 標頭（R-10）。
+    PaymentCallbackOut:
+      properties:
+        received:
+          type: boolean
+          title: Received
+        payment_status:
+          type: string
+          enum:
+          - pending
+          - succeeded
+          - failed
+          title: Payment Status
+      type: object
+      required:
+      - received
+      - payment_status
+      title: PaymentCallbackOut
+    PaymentOut:
+      properties:
+        transaction_id:
+          type: string
+          title: Transaction Id
+        status:
+          type: string
+          enum:
+          - pending
+          - succeeded
+          - failed
+          title: Status
+        order_status:
+          type: string
+          enum:
+          - pending_payment
+          - paid
+          - shipped
+          - completed
+          - cancelled
+          title: Order Status
+      type: object
+      required:
+      - transaction_id
+      - status
+      - order_status
+      title: PaymentOut
+    ProductCreateIn:
+      properties:
+        name:
+          type: string
+          maxLength: 100
+          minLength: 1
+          title: Name
+        description:
+          type: string
+          maxLength: 2000
+          title: Description
+          default: ''
+        price:
+          type: integer
+          maximum: 10000000.0
+          minimum: 0.0
+          title: Price
+        stock:
+          type: integer
+          maximum: 1000000.0
+          minimum: 0.0
+          title: Stock
+        category_id:
+          type: integer
+          maximum: 2147483647.0
+          exclusiveMinimum: 0.0
+          title: Category Id
+        image_color:
+          type: string
+          pattern: ^#[0-9a-fA-F]{6}$
+          title: Image Color
+          default: '#94a3b8'
+        is_active:
+          type: boolean
+          title: Is Active
+          default: true
+      additionalProperties: false
+      type: object
+      required:
+      - name
+      - price
+      - stock
+      - category_id
+      title: ProductCreateIn
+      description: 後台新增商品。價格與庫存不可為負數。
+    ProductOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        name:
+          type: string
+          title: Name
+        description:
+          type: string
+          title: Description
+        price:
+          type: integer
+          title: Price
+        currency:
+          type: string
+          title: Currency
+        stock:
+          type: integer
+          title: Stock
+        image_color:
+          type: string
+          title: Image Color
+        category_id:
+          type: integer
+          title: Category Id
+      type: object
+      required:
+      - id
+      - name
+      - description
+      - price
+      - currency
+      - stock
+      - image_color
+      - category_id
+      title: ProductOut
+      description: 前台看到的商品資料。price 為整數元（R-01）。
+    ProductUpdateIn:
+      properties:
+        name:
+          anyOf:
+          - type: string
+            maxLength: 100
+            minLength: 1
+          - type: 'null'
+          title: Name
+        description:
+          anyOf:
+          - type: string
+            maxLength: 2000
+          - type: 'null'
+          title: Description
+        price:
+          anyOf:
+          - type: integer
+            maximum: 10000000.0
+            minimum: 0.0
+          - type: 'null'
+          title: Price
+        stock:
+          anyOf:
+          - type: integer
+            maximum: 1000000.0
+            minimum: 0.0
+          - type: 'null'
+          title: Stock
+        category_id:
+          anyOf:
+          - type: integer
+            maximum: 2147483647.0
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Category Id
+        image_color:
+          anyOf:
+          - type: string
+            pattern: ^#[0-9a-fA-F]{6}$
+          - type: 'null'
+          title: Image Color
+        is_active:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Is Active
+      additionalProperties: false
+      type: object
+      title: ProductUpdateIn
+      description: 後台修改商品：只送要改的欄位即可。
+    QuoteIn:
+      properties:
+        coupon_code:
+          anyOf:
+          - type: string
+            maxLength: 32
+            minLength: 1
+            pattern: ^[A-Za-z0-9_-]+$
+          - type: 'null'
+          title: Coupon Code
+      additionalProperties: false
+      type: object
+      title: QuoteIn
+      description: 結帳試算：可選擇帶一張優惠碼。
+    QuoteLineOut:
+      properties:
+        product_id:
+          type: integer
+          title: Product Id
+        name:
+          type: string
+          title: Name
+        unit_price:
+          type: integer
+          title: Unit Price
+        quantity:
+          type: integer
+          title: Quantity
+        line_total:
+          type: integer
+          title: Line Total
+      type: object
+      required:
+      - product_id
+      - name
+      - unit_price
+      - quantity
+      - line_total
+      title: QuoteLineOut
+    QuoteOut:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/QuoteLineOut'
+          type: array
+          title: Items
+        subtotal:
+          type: integer
+          title: Subtotal
+        discount:
+          type: integer
+          title: Discount
+        shipping_fee:
+          type: integer
+          title: Shipping Fee
+        total:
+          type: integer
+          title: Total
+        currency:
+          type: string
+          title: Currency
+        coupon_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Coupon Code
+      type: object
+      required:
+      - items
+      - subtotal
+      - discount
+      - shipping_fee
+      - total
+      - currency
+      - coupon_code
+      title: QuoteOut
+      description: 後端計算的金額（真相來源）。total = subtotal - discount + shipping_fee。
+    RegisterIn:
+      properties:
+        email:
+          type: string
+          maxLength: 254
+          pattern: ^[^@\s]+@[^@\s]+\.[^@\s]+$
+          title: Email
+        password:
+          type: string
+          maxLength: 128
+          minLength: 8
+          title: Password
+        name:
+          type: string
+          maxLength: 50
+          minLength: 1
+          title: Name
+      additionalProperties: false
+      type: object
+      required:
+      - email
+      - password
+      - name
+      title: RegisterIn
+      description: 註冊：Email、密碼（至少 8 字，R-16）、顯示名稱。
+    TransitionIn:
+      properties:
+        to_status:
+          type: string
+          enum:
+          - shipped
+          - completed
+          - cancelled
+          title: To Status
+      additionalProperties: false
+      type: object
+      required:
+      - to_status
+      title: TransitionIn
+      description: 後台改訂單狀態。paid 只能由付款回呼產生，所以這裡不能選。
+    UserOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        email:
+          type: string
+          title: Email
+        name:
+          type: string
+          title: Name
+        role:
+          type: string
+          enum:
+          - member
+          - admin
+          title: Role
+      type: object
+      required:
+      - id
+      - email
+      - name
+      - role
+      title: UserOut
+      description: 目前登入者的公開資料。
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
